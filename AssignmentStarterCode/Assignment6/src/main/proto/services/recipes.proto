@@ -1,0 +1,61 @@
+// Users can post their own recipes that contain ingredients, their name and the recipe's name. Users can get a list of recipes and 
+// there is also a rating system incorporated into the service, where users can give a rating between 1-5. The system will return the mean value of a recipe when the recipe is shown.  
+
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "service";
+option java_outer_classname = "RecipeProto";
+
+package services;
+import "google/protobuf/empty.proto";
+
+service Recipe {
+  rpc addRecipe (RecipeReq) returns (RecipeResp) {}
+  rpc viewRecipes (google.protobuf.Empty) returns (RecipeViewResp) {}
+  rpc rateRecipe (RecipeRateReq) returns (RecipeResp) {}
+}
+
+// REQUEST: To post a Recipe, recipe will get an IP by server
+message RecipeReq {
+    string name = 1;
+    string author = 2;
+    repeated Ingredient ingredient = 3;
+}
+
+
+// REQUEST: To rate the recipe with the given id
+message RecipeRateReq {
+    int32 id = 1;
+    bool rating = 2;
+}
+
+// RESPONSE: Validates posting or rating a Recipe
+message RecipeResp {
+  bool isSuccess = 1;
+  string message = 2;
+  string error = 3; // only given when isSuccess is false
+}
+
+// RESPONSE: Sends Recipes back to user
+message RecipeViewResp {
+  bool isSuccess = 1;
+  repeated RecipeEntry recipes = 2;
+  string error = 3; // only given when isSuccess is false
+}
+
+//Entity: Ingredient
+message Ingredient {
+ string name = 1;
+ int32 quantity = 2; // in grams
+ string details = 3; // any user details
+}
+
+// Entity: Recipe
+message RecipeEntry {
+	int32 id = 1;
+  string name = 2;
+  repeated Ingredient ingredient = 3;
+	string author = 4;
+	float rating = 5;
+}

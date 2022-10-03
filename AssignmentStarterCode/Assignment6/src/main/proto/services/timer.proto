@@ -1,0 +1,43 @@
+// This service is a simple server based timer. You can start a timer or check the status of a timer
+// Handle error cases when needed.
+// Start will take the name of the timer to start, and respond with either succsess or that the name is already in use
+// Check will take name of the timer to check on. It will respond with either the time since the timer was started, or that the timer does not exist. The times runs until it is closed by a user.
+
+
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "service";
+option java_outer_classname = "TimerProto";
+
+package services;
+import "google/protobuf/empty.proto";
+
+service Timer {
+  rpc start (TimerRequest) returns (TimerResponse) {}
+  rpc check (TimerRequest) returns (TimerResponse) {}
+  rpc close (TimerRequest) returns (TimerResponse) {}
+  rpc list (google.protobuf.Empty) returns (TimerList) {}
+}
+
+// The request message includes the name of the timer
+message TimerRequest {
+  string name = 1;
+}
+
+// The response message
+message TimerResponse {
+  bool isSuccess = 1;
+  Time timer = 2;
+  string error = 3; // Error message, a String of your choice to show what went wrong -- isSuccess would then be false
+}
+
+// Returns a list of Timers
+message TimerList {
+    repeated Time timers = 1;
+}
+
+message Time {
+  string name = 1; // timer name
+  double secondsPassed = 2; //The number of seconds that have passed since the timer was started
+}

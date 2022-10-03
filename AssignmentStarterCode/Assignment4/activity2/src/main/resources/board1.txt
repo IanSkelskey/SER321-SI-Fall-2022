@@ -1,0 +1,4 @@
+  1 2 3 4
+a a|c|e|z
+b f|w|z|c
+c e|a|w|f

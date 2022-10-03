@@ -1,0 +1,56 @@
+// A simple game of rock paper scissors where the client plays against the server
+// The client can either play, or check the leaderboard
+// This means you need to keep track of the number of times someone has won or lost
+// The server should choose either rock paper or scissors randomly
+
+
+
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "service";
+option java_outer_classname = "RockPaperScissorsProto";
+
+package services;
+
+import "google/protobuf/empty.proto";
+
+service RockPaperScissors {
+  rpc play (PlayReq) returns (PlayRes) {}
+  rpc leaderboard (google.protobuf.Empty) returns (LeaderboardRes) {}
+}
+
+// The request message
+message PlayReq {
+    string name = 1; // name of the player
+    enum Played {
+      ROCK = 0;
+      PAPER = 1;
+      SCISSORS = 2;
+    }
+    Played play = 2;  // Enum from above
+}
+
+// The response message
+message PlayRes {
+  bool isSuccess = 1;
+  bool win = 2;
+  string message = 3; // Example "Computer played rock, you played scissor you loose", or "Your play was invalid"
+  string error = 4; // Error message, a String of your choice to show what went wrong if an error occured -- isSuccess would then be false
+}
+
+// The response message
+message LeaderboardRes {
+  bool isSuccess = 1;
+  repeated LeaderboardEntry leaderboard = 2;
+  string error = 3; // Error message, a String of your choice to show what went wrong if an error occured -- isSuccess would then be false
+}
+
+// One entry in the leaderboard
+message LeaderboardEntry {
+    string name = 1; // name of player
+    int32 rank = 2; // you can rank any way you like, based only on wins or on diff between won and lost games or whatever you come up with 
+    int32 wins = 3; // number of wins
+    int32 lost = 4; // number of lost games 
+}
+

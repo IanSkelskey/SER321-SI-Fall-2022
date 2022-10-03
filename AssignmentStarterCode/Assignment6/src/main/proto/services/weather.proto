@@ -1,0 +1,50 @@
+// This server allows the client to check the weather conditions for a city or set of coordiates 
+// It only knows some cities, and the service can send a list of the cities it knows
+// This service is more difficult, try it if you want to challenge yourself
+// Your server will need to recive the request, make an API call to a public API, and return the results to the client -- you can use the Webserver from assignment 2 as a guideline as how you can make an API call, remember we called GitHub in there. You can copy the part about fetching data from there. 
+// API Documentation for one such API can be found here: https://openweathermap.org/api/one-call-api
+
+
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "service";
+option java_outer_classname = "WeatherProto";
+
+package services;
+import "google/protobuf/empty.proto";
+
+service Weather {
+  rpc atCoordinates (WeatherCoordinateRequest) returns (WeatherResponse) {}
+  rpc inCity (WeatherCityRequest) returns (WeatherResponse) {}
+  rpc listCities (google.protobuf.Empty) returns (CitiesResponse) {}
+}
+
+// The lattitude and longitude of the location, in degrees, Positive is north, negative is south.
+message WeatherCoordinateRequest {
+  double latitude = 1;
+  double longitude = 2;
+}
+
+// The Name of the city you are requesting.
+// The server must maintain a list of valid city names, translate them into cooridantes, and make the API Request
+// You only need to store a couple cities, don't spend too much time on this. Would be nice
+message WeatherCityRequest {
+    string cityName = 1;
+  }
+
+// The response message
+message WeatherResponse {
+  bool isSuccess = 1;
+  string error = 2; // Error message, should return a good error message of what might have gone wrong, e.g. city does not exist  -- isSuccess would then be false
+  double currentTemp = 3; //The current temp in degrees F
+  string currentConditions = 4; //A description of the current weather conditions
+  repeated double dailyHighs = 5; //An array of the daily high temprature, starting with today.
+}
+
+// The response for the listCities request
+message CitiesResponse {
+  bool isSuccess = 1;
+  string error = 2; // Error message, should return a good error message in case something went wrong  -- isSuccess would then be false
+  repeated string cityName = 3;
+}

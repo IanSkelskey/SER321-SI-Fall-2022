@@ -1,0 +1,53 @@
+// A simple service that lets clients enter their name, birth month, and birth day to discover their
+// Zodiac sign. Upon sending their information they will be registered with the server and the server
+// will then respond with their corresponding sign and personality traits. Clients can also
+// request to find others of the same sign and the server will respond with a list of users
+// who share that sign and their information.
+
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "service";
+option java_outer_classname = "ZodiacProto";
+
+package services;
+
+service Zodiac {
+  rpc sign (SignRequest) returns (SignResponse) {}
+  rpc find (FindRequest) returns (FindResponse) {}
+}
+
+// The sign request to the server with user information
+message SignRequest {
+  string name = 1; // name of user
+  string month = 2; // user birth month (Ex: Jan)
+  int32 day = 3; // user birth day
+}
+
+// The sign response message from the server
+message SignResponse {
+  bool isSuccess = 1;
+  string error = 2; // error message, provide a descriptive message in case something goes wrong
+  string message = 3; // Example 'Leo, the fifth sign in the zodiac, belongs to those born between Jul 23 and Aug 22nd.
+}		      // 	  Traits: Dramatic, outgoing, fiery, and self-assured.'
+
+// Request to the server to find users of the same sign
+message FindRequest {
+  string sign = 1; // Example 'Leo'
+}
+
+// The find response from the server 
+message FindResponse {
+  bool isSuccess = 1;
+  string error = 2; // error message, provide a descriptive message in case something goes wrong
+  repeated ZodiacEntry entries = 3; // all the users registered so far
+}
+
+// A single entry in the user list
+message ZodiacEntry {
+  string name = 1; // name of user
+  string sign = 2; // user zodiac sign
+  string month = 3; // user birth month
+  int32 day = 4; // user birth day
+}
+

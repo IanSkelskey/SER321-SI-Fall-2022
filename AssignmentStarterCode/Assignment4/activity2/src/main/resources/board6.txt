@@ -1,0 +1,5 @@
+  1 2 3 4
+a k|w|s|e
+b g|s|h|b
+c b|h|m|w
+d m|e|g|k

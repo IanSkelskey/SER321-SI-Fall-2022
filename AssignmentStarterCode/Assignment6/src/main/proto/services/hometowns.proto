@@ -1,0 +1,51 @@
+// This service saves classmates names and where they are from that clients add and keeps track of. 
+// A client can read all hometowns, search for classmates by city, or add a new entry. The server should maintain the state even after crashing.
+// So you should save all the data in a JSON or proto file (that is up to you). When starting the server the server should read the data in. 
+
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "service";
+option java_outer_classname = "HometownsProto";
+
+import "google/protobuf/empty.proto";
+
+package services;
+
+service Hometowns {
+  rpc read (google.protobuf.Empty) returns (HometownsReadResponse) {}
+  rpc search (HometownsSearchRequest) returns (HometownsReadResponse) {}
+  rpc write (HometownsWriteRequest) returns (HometownsWriteResponse) {}
+}
+
+// The response message when reading the entries, either by read or search
+message HometownsReadResponse {
+  bool isSuccess = 1;
+  repeated Hometown hometowns = 2; // all the hometowns peers entered so far (either all or based on search parameter)
+  string error = 3; // Error message, a String of your choice to show what went wrong if an error occured -- isSuccess would then be false
+}
+
+
+
+// The request message to search for classmates in a city
+message HometownsSearchRequest {
+    string city = 1;
+}
+
+
+// The request message adding a new entry to the server
+message HometownsWriteRequest {
+    Hometown hometown = 1;
+}
+
+// The response message
+message HometownsWriteResponse {
+    bool isSuccess = 1; // true if success, false and error if it did not work for some reason
+    string error = 2; // Error message 
+}
+
+message Hometown {
+    string name = 1; // name of the person
+    string city = 2; // the city the person lives in
+    string region = 3; // the state or country the city is in
+}

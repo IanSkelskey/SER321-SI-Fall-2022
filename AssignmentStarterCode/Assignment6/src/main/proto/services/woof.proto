@@ -1,0 +1,49 @@
+// A "twitter" clone that allows users to post messages, view messages, and search for messages by user. The collection of "woofs" is persistent.
+
+
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "service";
+option java_outer_classname = "WoofProto";
+
+package services;
+import "google/protobuf/empty.proto";
+
+service Woof {
+  rpc woof (WoofReq) returns (WoofRes) {}
+  rpc getUsersWoofs (GetWoofsReq) returns (GetWoofsResp) {}
+  rpc getAllWoofs (google.protobuf.Empty) returns (GetWoofsResp) {}
+}
+
+// REQUEST: To post a Woof
+message WoofReq {
+    string name = 1;
+    string body = 2;
+}
+
+// REQUEST: To get Woofs by username
+message GetWoofsReq {
+    string name = 1;
+}
+
+// RESPONSE: Validates posting a Woof
+message WoofRes {
+  bool isSuccess = 1;
+  string message = 2;
+  string error = 3;
+}
+
+// RESPONSE: Sends Woofs back to user
+message GetWoofsResp {
+  bool isSuccess = 1;
+  repeated WoofPost woofs = 2;
+  string error = 3;
+}
+
+// RESPONSE: Woof post
+message WoofPost {
+    string name = 1;
+    string body = 2;
+	string time = 3;
+}

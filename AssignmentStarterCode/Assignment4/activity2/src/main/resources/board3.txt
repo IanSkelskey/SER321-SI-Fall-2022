@@ -1,0 +1,4 @@
+  1 2 3 4
+a g|b|d|b
+b e|s|g|k
+c e|k|d|s
