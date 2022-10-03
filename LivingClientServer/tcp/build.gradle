@@ -1,0 +1,62 @@
+plugins {
+  id 'java'
+  id "com.google.protobuf" version "0.8.13" apply true
+}
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  implementation group: 'com.google.protobuf', name: 'protobuf-java', version: '3.13.0'
+}
+
+protobuf {
+  protoc {
+    artifact = 'com.google.protobuf:protoc:3.13.0'
+  }
+}
+
+def port = 8080
+def host = 'localhost'
+
+task arguments {
+  if (project.hasProperty("port")) {
+    port = project.getProperty("port")
+  }
+  if (project.hasProperty("host")) {
+    host = project.getProperty("host")
+  }
+}
+
+task runClient(type: JavaExec) {
+  group 'client'
+  description 'Runs the client'
+
+  classpath = sourceSets.main.runtimeClasspath
+
+  main = 'Client'
+  standardInput = System.in
+
+  args host
+  args port
+}
+
+task runServer(type: JavaExec) {
+  group 'server'
+  description 'Runs the server'
+
+  classpath = sourceSets.main.runtimeClasspath
+
+  main = 'Server'
+
+  args port
+}
+
+sourceSets {
+  main {
+    java {
+      srcDirs 'build/generated/source/proto/main/java'
+    }
+  }
+}

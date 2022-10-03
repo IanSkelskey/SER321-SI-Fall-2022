@@ -1,0 +1,17 @@
+syntax = "proto2";
+
+package operation;
+
+option java_package = "buffers";
+option java_outer_classname = "EchoProto";
+
+message Echo {
+  required Type type = 1;
+  required string message = 2;
+}
+
+enum Type {
+  EXIT = 0;
+  ECHO = 1;
+  REVERSE = 2;
+}
