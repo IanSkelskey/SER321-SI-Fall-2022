@@ -2,3 +2,6 @@ gradlew
 gradlew.bat
 .gradle
 /gradle/
+/build/
+*.log.lck
+*.log

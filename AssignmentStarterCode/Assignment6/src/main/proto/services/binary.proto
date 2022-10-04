@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "service";
+option java_outer_classname = "BinaryProto";
+
+package services;
+
+import "google/protobuf/empty.proto";
+
+service Binary {
+  rpc sendBinary (BinaryToStringReq) returns (ConversionResponse) {}
+  rpc sendString (StringToBinaryReq) returns (ConversionResponse) {}
+}
+message BinaryToStringReq {
+  string binary = 1;
+}
+message StringToBinaryReq {
+  string str = 1;
+}
+message ConversionResponse {
+  string result = 1;
+  string error = 2;
+}

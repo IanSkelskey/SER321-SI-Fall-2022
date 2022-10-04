@@ -1,16 +1,13 @@
-package example.grpcclient;
+package examples.grpcclient;
 
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import java.util.concurrent.TimeUnit;
 import service.*;
-import test.TestProtobuf;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
-import com.google.protobuf.Empty; // needed to use Empty
 
 // just to show how to use the empty in the protobuf protocol
     // Empty empt = Empty.newBuilder().build();
@@ -19,9 +16,10 @@ import com.google.protobuf.Empty; // needed to use Empty
  * Client that requests `parrot` method from the `EchoServer`.
  */
 public class EchoClient {
-  private final EchoGrpc.EchoBlockingStub blockingStub;
-  private final JokeGrpc.JokeBlockingStub blockingStub2;
-  private final RegistryGrpc.RegistryBlockingStub blockingStub3;
+  private EchoGrpc.EchoBlockingStub echoStub;
+  private JokeGrpc.JokeBlockingStub jokeStub;
+  private BinaryGrpc.BinaryBlockingStub binaryStub;
+  private final RegistryGrpc.RegistryBlockingStub registryStub;
 
   /** Construct client for accessing server using the existing channel. */
   public EchoClient(Channel channel, Channel regChannel) {
@@ -31,20 +29,51 @@ public class EchoClient {
 
     // Passing Channels to code makes code easier to test and makes it easier to
     // reuse Channels.
-    blockingStub = EchoGrpc.newBlockingStub(channel);
-    blockingStub2 = JokeGrpc.newBlockingStub(channel);
-    blockingStub3 = RegistryGrpc.newBlockingStub(regChannel);
+    echoStub = EchoGrpc.newBlockingStub(channel);
+    jokeStub = JokeGrpc.newBlockingStub(channel);
+    binaryStub = BinaryGrpc.newBlockingStub(channel);
+    registryStub = RegistryGrpc.newBlockingStub(regChannel);
+  }
+
+  public void setChannel(Channel channel) {
+    echoStub = EchoGrpc.newBlockingStub(channel);
+    jokeStub = JokeGrpc.newBlockingStub(channel);
+    binaryStub = BinaryGrpc.newBlockingStub(channel);
+  }
+
+  public void askToConvertBinaryToString(String input) {
+    BinaryToStringReq request = BinaryToStringReq.newBuilder()
+            .setBinary(input)
+            .build();
+    ConversionResponse response;
+    try {
+      response = binaryStub.sendBinary(request);
+      System.out.println(response.getResult());
+      System.out.println(response.getError());
+    } catch (Exception e) {
+      System.err.println("RPC failed: " + e);
+    }
+  }
+
+  public void askToConvertStringToBinary(String input) {
+    StringToBinaryReq request = StringToBinaryReq.newBuilder()
+            .setStr(input)
+            .build();
+    ConversionResponse response;
+    try {
+      response = binaryStub.sendString(request);
+      System.out.println(response.getResult());
+      System.out.println(response.getError());
+    } catch (Exception e) {
+      System.err.println("RPC failed: " + e);
+    }
   }
 
   public void askServerToParrot(String message) {
-
-    
-
-
     ClientRequest request = ClientRequest.newBuilder().setMessage(message).build();
     ServerResponse response;
     try {
-      response = blockingStub.parrot(request);
+      response = echoStub.parrot(request);
     } catch (Exception e) {
       System.err.println("RPC failed: " + e.getMessage());
       return;
@@ -55,10 +84,8 @@ public class EchoClient {
   public void askForJokes(int num) {
     JokeReq request = JokeReq.newBuilder().setNumber(num).build();
     JokeRes response;
-
-
     try {
-      response = blockingStub2.getJoke(request);
+      response = jokeStub.getJoke(request);
     } catch (Exception e) {
       System.err.println("RPC failed: " + e);
       return;
@@ -74,11 +101,10 @@ public class EchoClient {
     JokeSetRes response;
 
     try {
-      response = blockingStub2.setJoke(request);
+      response = jokeStub.setJoke(request);
       System.out.println(response.getOk());
     } catch (Exception e) {
       System.err.println("RPC failed: " + e);
-      return;
     }
   }
 
@@ -86,11 +112,10 @@ public class EchoClient {
     GetServicesReq request = GetServicesReq.newBuilder().build();
     ServicesListRes response;
     try {
-      response = blockingStub3.getServices(request);
+      response = registryStub.getServices(request);
       System.out.println(response.toString());
     } catch (Exception e) {
       System.err.println("RPC failed: " + e);
-      return;
     }
   }
 
@@ -98,7 +123,7 @@ public class EchoClient {
     FindServerReq request = FindServerReq.newBuilder().setServiceName(name).build();
     SingleServerRes response;
     try {
-      response = blockingStub3.findServer(request);
+      response = registryStub.findServer(request);
       System.out.println(response.toString());
     } catch (Exception e) {
       System.err.println("RPC failed: " + e);
@@ -110,7 +135,7 @@ public class EchoClient {
     FindServersReq request = FindServersReq.newBuilder().setServiceName(name).build();
     ServerListRes response;
     try {
-      response = blockingStub3.findServers(request);
+      response = registryStub.findServers(request);
       System.out.println(response.toString());
     } catch (Exception e) {
       System.err.println("RPC failed: " + e);
@@ -142,7 +167,7 @@ public class EchoClient {
     // and reusable. It is common to create channels at the beginning of your
     // application and reuse
     // them until the application shuts down.
-    String target = host + ":" + port;
+    String target = "localhost" + ":" + 9009;
     ManagedChannel channel = ManagedChannelBuilder.forTarget(target)
         // Channels are secure by default (via SSL/TLS). For the example we disable TLS
         // to avoid
@@ -193,13 +218,19 @@ public class EchoClient {
       String num = reader.readLine();
 
       // calling the joked service from the server with num from user input
-      client.askForJokes(Integer.valueOf(num));
+      client.askForJokes(Integer.parseInt(num));
 
       // adding a joke to the server
       client.setJoke("I made a pencil with two erasers. It was pointless.");
 
-      // showing 6 joked
-      client.askForJokes(Integer.valueOf(6));
+      // showing 6 jokes
+      client.askForJokes(6);
+
+      // Convert String to binary
+      client.askToConvertStringToBinary("Hello");
+
+      // Convert binary to string
+      client.askToConvertBinaryToString("0100100001100101011011000110110001101111");
 
       // ############### Contacting the registry just so you see how it can be done
 
@@ -216,6 +247,14 @@ public class EchoClient {
 
         // get getJoke
         client.findServer("services.Joke/getJoke"); // get ALL servers that provide the getJoke service
+
+        System.out.println("Servers with binary service: ");
+
+        // convert binary to string
+        client.findServer("services.Binary/sendBinary");
+
+        // convert binary to string
+        client.findServer("services.Binary/sendString");
 
         // does not exist
         client.findServer("random"); // shows the output if the server does not find a given service

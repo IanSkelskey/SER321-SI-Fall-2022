@@ -1,4 +1,4 @@
-package example.grpcclient;
+package examples.grpcclient;
 
 import io.grpc.stub.StreamObserver;
 import service.*;
@@ -14,5 +14,5 @@ class EchoImpl extends EchoGrpc.EchoImplBase {
         ServerResponse response = ServerResponse.newBuilder().setMessage(req.getMessage()).build();
         responseObserver.onNext(response);
         responseObserver.onCompleted();
-    }     
+    }
 }
