@@ -12,3 +12,7 @@ Oct 03, 2022 7:19:23 PM registry.Logging logging
 INFO: New service registered: iskelske localhost:8000
 Oct 03, 2022 7:24:01 PM registry.Logging logging
 INFO: New service registered: iskelske2 localhost:9009
+Oct 04, 2022 7:18:35 PM registry.Logging logging
+INFO: New service registered: iskelske localhost:8000
+Oct 04, 2022 7:19:43 PM registry.Logging logging
+INFO: New service registered: iskelske2 localhost:9009

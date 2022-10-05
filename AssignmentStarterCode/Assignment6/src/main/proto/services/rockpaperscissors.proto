@@ -3,8 +3,6 @@
 // This means you need to keep track of the number of times someone has won or lost
 // The server should choose either rock paper or scissors randomly
 
-
-
 syntax = "proto3";
 
 option java_multiple_files = true;
@@ -53,4 +51,3 @@ message LeaderboardEntry {
     int32 wins = 3; // number of wins
     int32 lost = 4; // number of lost games 
 }
-

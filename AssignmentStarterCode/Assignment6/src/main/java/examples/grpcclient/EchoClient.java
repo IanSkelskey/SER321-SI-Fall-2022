@@ -16,9 +16,10 @@ import java.io.InputStreamReader;
  * Client that requests `parrot` method from the `EchoServer`.
  */
 public class EchoClient {
-  private EchoGrpc.EchoBlockingStub echoStub;
-  private JokeGrpc.JokeBlockingStub jokeStub;
-  private BinaryGrpc.BinaryBlockingStub binaryStub;
+  private final EchoGrpc.EchoBlockingStub echoStub;
+  private final JokeGrpc.JokeBlockingStub jokeStub;
+  private final RockPaperScissorsGrpc.RockPaperScissorsBlockingStub rpsStub;
+  private final BinaryGrpc.BinaryBlockingStub binaryStub;
   private final RegistryGrpc.RegistryBlockingStub registryStub;
 
   /** Construct client for accessing server using the existing channel. */
@@ -26,19 +27,63 @@ public class EchoClient {
     // 'channel' here is a Channel, not a ManagedChannel, so it is not this code's
     // responsibility to
     // shut it down.
-
     // Passing Channels to code makes code easier to test and makes it easier to
     // reuse Channels.
     echoStub = EchoGrpc.newBlockingStub(channel);
     jokeStub = JokeGrpc.newBlockingStub(channel);
+    rpsStub = RockPaperScissorsGrpc.newBlockingStub(channel);
     binaryStub = BinaryGrpc.newBlockingStub(channel);
     registryStub = RegistryGrpc.newBlockingStub(regChannel);
   }
 
-  public void setChannel(Channel channel) {
-    echoStub = EchoGrpc.newBlockingStub(channel);
-    jokeStub = JokeGrpc.newBlockingStub(channel);
-    binaryStub = BinaryGrpc.newBlockingStub(channel);
+  public void askToPlayRockPaperScissors(String name, int play) {
+    PlayReq request = PlayReq.newBuilder()
+            .setName(name)
+            .setPlay(PlayReq.Played.forNumber(play))
+            .build();
+    PlayRes response;
+
+    try {
+      response = rpsStub.play(request);
+      System.out.println(response.getMessage());
+      // System.out.println(response.getError());
+    } catch (Exception e) {
+      System.err.println("RPC failed: " + e);
+      return;
+    }
+  }
+
+  public void askForLeaderboard() {
+    com.google.protobuf.Empty empty = com.google.protobuf.Empty.newBuilder().build();
+    try {
+      LeaderboardRes response = rpsStub.leaderboard(empty);
+      System.out.println("\nRock Paper Scissors Leaderboard");
+      System.out.println("Rank\tName\tWins\tLosses");
+      for (LeaderboardEntry e: response.getLeaderboardList()) {
+        System.out.print(e.getRank());
+        System.out.print("\t" + e.getName());
+        System.out.print("\t" + e.getWins());
+        System.out.println("\t" + e.getLost());
+      }
+      System.out.println(response.getError());
+    } catch (Exception e) {
+      System.err.println("RPC failed: " + e);
+      return;
+    }
+  }
+
+  public void askServerToParrot(String message) {
+    ClientRequest request = ClientRequest.newBuilder()
+            .setMessage(message)
+            .build();
+    ServerResponse response;
+    try {
+      response = echoStub.parrot(request);
+    } catch (Exception e) {
+      System.err.println("RPC failed: " + e.getMessage());
+      return;
+    }
+    System.out.println("Received from server: " + response.getMessage());
   }
 
   public void askToConvertBinaryToString(String input) {
@@ -67,18 +112,6 @@ public class EchoClient {
     } catch (Exception e) {
       System.err.println("RPC failed: " + e);
     }
-  }
-
-  public void askServerToParrot(String message) {
-    ClientRequest request = ClientRequest.newBuilder().setMessage(message).build();
-    ServerResponse response;
-    try {
-      response = echoStub.parrot(request);
-    } catch (Exception e) {
-      System.err.println("RPC failed: " + e.getMessage());
-      return;
-    }
-    System.out.println("Received from server: " + response.getMessage());
   }
 
   public void askForJokes(int num) {
@@ -167,7 +200,7 @@ public class EchoClient {
     // and reusable. It is common to create channels at the beginning of your
     // application and reuse
     // them until the application shuts down.
-    String target = "localhost" + ":" + 9009;
+    String target = host + ":" + port;
     ManagedChannel channel = ManagedChannelBuilder.forTarget(target)
         // Channels are secure by default (via SSL/TLS). For the example we disable TLS
         // to avoid
@@ -213,13 +246,6 @@ public class EchoClient {
       // ask the user for input how many jokes the user wants
       BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
-      // Reading data using readLine
-      System.out.println("How many jokes would you like?"); // NO ERROR handling of wrong input here.
-      String num = reader.readLine();
-
-      // calling the joked service from the server with num from user input
-      client.askForJokes(Integer.parseInt(num));
-
       // adding a joke to the server
       client.setJoke("I made a pencil with two erasers. It was pointless.");
 
@@ -231,6 +257,17 @@ public class EchoClient {
 
       // Convert binary to string
       client.askToConvertBinaryToString("0100100001100101011011000110110001101111");
+
+      client.askToPlayRockPaperScissors("Ian", 0);
+      client.askToPlayRockPaperScissors("John", 2);
+      client.askToPlayRockPaperScissors("Ian", 1);
+      client.askToPlayRockPaperScissors("John", 0);
+      client.askToPlayRockPaperScissors("Ian", 0);
+      client.askToPlayRockPaperScissors("John", 2);
+      client.askToPlayRockPaperScissors("Ian", 1);
+      client.askToPlayRockPaperScissors("John", 0);
+      client.askForLeaderboard();
+
 
       // ############### Contacting the registry just so you see how it can be done
 
