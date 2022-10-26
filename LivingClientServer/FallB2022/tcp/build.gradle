@@ -1,0 +1,38 @@
+plugins {
+  id 'java'
+}
+
+def port = 8080
+def host = 'localhost'
+
+task arguments {
+  if (project.hasProperty("port")) {
+    port = project.getProperty("port")
+  }
+  if (project.hasProperty("host")) {
+    host = project.getProperty("host")
+  }
+}
+
+task runClient(type: JavaExec) {
+  group 'client'
+  description 'Runs the client'
+
+  classpath = sourceSets.main.runtimeClasspath
+
+  main = 'Client'
+  standardInput = System.in
+
+  args host
+  args port
+}
+
+task runServer(type: JavaExec) {
+  group 'server'
+  description 'Runs the server'
+
+  classpath = sourceSets.main.runtimeClasspath
+
+  main = 'Server'
+  args port
+}
