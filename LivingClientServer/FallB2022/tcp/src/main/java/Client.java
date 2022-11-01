@@ -12,14 +12,13 @@ class Client {
         try (Socket sock = new Socket(host, port);
              BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
              BufferedReader in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
-             PrintWriter out = new PrintWriter(sock.getOutputStream()))
+             PrintWriter out = new PrintWriter(sock.getOutputStream(), true))
         {
             System.out.println("Host: " + host + "\nPort: " + port);
             System.out.println("Enter a message for the server to echo!\n");
             String userInput = stdIn.readLine();
             System.out.println("You entered: " + userInput);
             out.println(userInput);
-            out.flush();
             System.out.println(in.readLine());
         } catch(Exception e) {
             e.printStackTrace();
