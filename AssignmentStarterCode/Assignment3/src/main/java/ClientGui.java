@@ -1,8 +1,7 @@
-import java.awt.Dimension;
+import java.awt.*;
 
 import org.json.*;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -13,8 +12,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Base64;
 
-import javax.swing.JDialog;
-import javax.swing.WindowConstants;
+import javax.swing.*;
 
 /**
  * The ClientGui class is a GUI frontend that displays an image grid, an input text box,
@@ -37,7 +35,8 @@ import javax.swing.WindowConstants;
  * 
  */
 public class ClientGui implements OutputPanel.EventHandlers {
-	JDialog frame;
+	// Changed JDialog to JFrame to get taskbar icon
+	JFrame frame;
 	PicturePanel picturePanel;
 	OutputPanel outputPanel;
 	boolean gameStarted = false;
@@ -47,12 +46,16 @@ public class ClientGui implements OutputPanel.EventHandlers {
 	ObjectOutputStream os;
 	BufferedReader bufferedReader;
 
+	// Added by Ian
+	private final String ICON_PATH = "img/icon.png";
+	private final Image icon = new ImageIcon(ICON_PATH).getImage();
+
 	/**
 	 * Construct dialog
 	 * @throws IOException 
 	 */
 	public ClientGui() throws IOException {
-		frame = new JDialog();
+		frame = new JFrame();
 		frame.setLayout(new GridBagLayout());
 		frame.setMinimumSize(new Dimension(500, 500));
 		frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -80,15 +83,14 @@ public class ClientGui implements OutputPanel.EventHandlers {
 		picturePanel.newGame(1);
 		insertImage("img/hi.png", 0, 0);
 
+		this.frame.setIconImage(icon);
 	}
 
 	/**
 	 * Shows the current state in the GUI
-	 * @param makeModal - true to make a modal window, false disables modal behavior
 	 */
-	public void show(boolean makeModal) {
+	public void show() {
 		frame.pack();
-		frame.setModal(makeModal);
 		frame.setVisible(true);
 	}
 
@@ -122,7 +124,6 @@ public class ClientGui implements OutputPanel.EventHandlers {
 
 	/**
 	 * Submit button handling
-	 * 
 	 * TODO: This is where your logic will go or where you will call appropriate methods you write. 
 	 * Right now this method opens and closes the connection after every interaction, if you want to keep that or not is up to you. 
 	 */
@@ -134,7 +135,7 @@ public class ClientGui implements OutputPanel.EventHandlers {
 		String input = outputPanel.getInputText();
 
 
-		currentMessage = "{'type': 'name', 'value' : '"+input+"'}";
+		currentMessage = "{'type': 'name', 'value' : '" + input + "'}";
 		outputPanel.setBlanks(input);
 		outputPanel.setPoints(3243);
 
@@ -160,17 +161,13 @@ public class ClientGui implements OutputPanel.EventHandlers {
 		}
 	}
 
-
 	public static void main(String[] args) throws IOException {
 		// create the frame
-
 		try {
 			ClientGui main = new ClientGui();
-			main.show(true);
+			main.show();
 
 		} catch (Exception e) {e.printStackTrace();}
-
-
 
 	}
 }
