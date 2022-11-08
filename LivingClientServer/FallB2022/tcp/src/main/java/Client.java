@@ -1,9 +1,12 @@
+import org.json.JSONArray;
 import org.json.JSONObject;
 import utils.JsonUtils;
 import utils.NetworkUtils;
 
 import java.io.*;
 import java.net.Socket;
+
+import static utils.Protocol.*;
 
 class Client {
 
@@ -14,9 +17,9 @@ class Client {
         int port = Integer.parseInt(args[1]);
 
         try (
-             Socket sock = new Socket(host, port);
-             OutputStream out = sock.getOutputStream();
-             InputStream in = sock.getInputStream()
+                Socket sock = new Socket(host, port);
+                OutputStream out = sock.getOutputStream();
+                InputStream in = sock.getInputStream()
         ) {
             System.out.println("Host: " + host + "\nPort: " + port);
             while (true) {
@@ -24,16 +27,31 @@ class Client {
                 String selection = stdIn.readLine();
                 JSONObject request = makeRequest(Integer.parseInt(selection));
 
-                if (request != null) {
-                    NetworkUtils.Send(out, JsonUtils.toByteArray(request));
+                if (request == null) {
+                    System.out.println("Failed to construct request. Please try again.");
+                    continue;
+                }
 
-                    byte[] responseBytes = NetworkUtils.Receive(in);
-                    JSONObject response = JsonUtils.fromByteArray(responseBytes);
-                    System.out.println("Response: " + response.get("body"));
+                NetworkUtils.Send(out, JsonUtils.toByteArray(request));
+
+                if (request.getString("type").equalsIgnoreCase("exit")) {
+                    System.exit(0);
+                }
+
+                byte[] responseBytes = NetworkUtils.Receive(in);
+                JSONObject response = JsonUtils.fromByteArray(responseBytes);
+                switch (response.getString("type")) {
+                    case "string array" -> {
+                        JSONArray array = response.getJSONArray("body");
+                        for (int i = 0; i < array.length(); i++) {
+                            System.out.println(array.getString(i));
+                        }
+                    }
+                    default -> System.out.println("Response: " + response.get("body"));
                 }
             }
 
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -43,6 +61,7 @@ class Client {
         System.out.println("Please choose a service from the following list.");
         System.out.println("1\tEcho");
         System.out.println("2\tReverse");
+        System.out.println("3\tString Array");
         System.out.println("0\tExit");
     }
 
@@ -66,24 +85,17 @@ class Client {
                     e.printStackTrace();
                 }
             }
-            case 0 -> System.exit(0);
+            case 3 -> {
+                return createStringArrayRequest();
+            }
+            case 0 -> {
+                return createExitRequest();
+            }
             default -> System.out.println("Invalid selection. Please try again.");
         }
         return null;
     }
 
-    public static JSONObject createEchoRequest(String message) {
-        JSONObject request = new JSONObject();
-        request.put("type", "echo");
-        request.put("body", message);
-        return request;
-    }
 
-    public static JSONObject createReverseRequest(String message) {
-        JSONObject request = new JSONObject();
-        request.put("type", "reverse");
-        request.put("body", message);
-        return request;
-    }
 
 }
