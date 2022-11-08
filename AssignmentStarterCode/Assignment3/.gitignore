@@ -6,3 +6,6 @@ build
 /bin/
 /gradle/
 /.gradle/
+
+gradlew.bat
+gradlew
