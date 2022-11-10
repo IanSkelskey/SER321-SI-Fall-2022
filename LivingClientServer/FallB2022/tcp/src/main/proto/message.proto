@@ -1,0 +1,24 @@
+syntax = "proto2";
+
+package operation;
+
+option java_package = "buffers";
+option java_outer_classname = "Message";
+
+message Request {
+  required Type type = 1;
+  optional string body = 2;
+}
+
+message Response {
+  required Type type = 1;
+  optional string body = 2;
+}
+
+enum Type {
+  EXIT = 0;
+  ECHO = 1;
+  REVERSE = 2;
+  STRING_ARRAY = 3;
+  ERROR = 4;
+}

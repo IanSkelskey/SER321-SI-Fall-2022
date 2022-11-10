@@ -3,6 +3,10 @@ package utils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import buffers.Message.Request;
+import buffers.Message.Response;
+import buffers.Message.Type;
+
 import java.util.ArrayList;
 
 public class Protocol {
@@ -15,64 +19,62 @@ public class Protocol {
         STRING_ARRAY.add("Bye");
     }
 
-    public static JSONObject createEchoResponse(String message) {
-        JSONObject response = new JSONObject();
-        response.put("type", "echo");
-        response.put("body", message);
-        return response;
+    public static Response createEchoResponse(String message) {
+        return Response.newBuilder()
+                .setType(Type.ECHO)
+                .setBody(message)
+                .build();
     }
 
-    public static JSONObject createReverseResponse(String message) {
-        JSONObject response = new JSONObject();
-        response.put("type", "reverse");
+    public static Response createReverseResponse(String message) {
         StringBuilder reversedMessage = new StringBuilder(message);
         reversedMessage.reverse();
-        response.put("body", reversedMessage);
-        return response;
+        return Response.newBuilder()
+                .setType(Type.REVERSE)
+                .setBody(reversedMessage.toString())
+                .build();
     }
 
-    public static JSONObject createStringArrayResponse() {
+    public static Response createStringArrayResponse() {
         buildStringArray();
-        JSONObject response = new JSONObject();
-        JSONArray array = new JSONArray();
-        response.put("type", "string array");
-        for (String s: STRING_ARRAY) {
-            array.put(s);
-        }
-        response.put("body", array);
-        return response;
+        String message = String.join("\n", STRING_ARRAY);
+        return Response.newBuilder()
+                .setType(Type.STRING_ARRAY)
+                .setBody(message)
+                .build();
     }
 
-    public static JSONObject createErrorResponse() {
-        JSONObject response = new JSONObject();
-        response.put("type", "error");
-        response.put("body", "Unable to process your request at this time. Please try again.");
-        return response;
+    public static Response createErrorResponse() {
+        return Response.newBuilder()
+                .setType(Type.ERROR)
+                .setBody("Unable to process your request at this time. Please try again.")
+                .build();
     }
 
-    public static JSONObject createEchoRequest(String message) {
-        JSONObject request = new JSONObject();
-        request.put("type", "echo");
-        request.put("body", message);
-        return request;
+    //
+    public static Request createEchoRequest(String message) {
+        return Request.newBuilder()
+                .setType(Type.ECHO)
+                .setBody(message)
+                .build();
     }
 
-    public static JSONObject createReverseRequest(String message) {
-        JSONObject request = new JSONObject();
-        request.put("type", "reverse");
-        request.put("body", message);
-        return request;
+    public static Request createReverseRequest(String message) {
+        return Request.newBuilder()
+                .setType(Type.REVERSE)
+                .setBody(message)
+                .build();
     }
 
-    public static JSONObject createStringArrayRequest() {
-        JSONObject request = new JSONObject();
-        request.put("type", "string array");
-        return request;
+    public static Request createStringArrayRequest() {
+        return Request.newBuilder()
+                .setType(Type.STRING_ARRAY)
+                .build();
     }
 
-    public static JSONObject createExitRequest() {
-        JSONObject request = new JSONObject();
-        request.put("type", "exit");
-        return request;
+    public static Request createExitRequest() {
+        return Request.newBuilder()
+                .setType(Type.EXIT)
+                .build();
     }
 }

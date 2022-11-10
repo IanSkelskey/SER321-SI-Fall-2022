@@ -1,11 +1,11 @@
-import org.json.JSONObject;
-import utils.JsonUtils;
-import utils.NetworkUtils;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+
+import buffers.Message.Request;
+import buffers.Message.Response;
+import buffers.Message.Type;
 
 import static utils.Protocol.*;
 import static utils.Protocol.createErrorResponse;
@@ -39,17 +39,15 @@ public class ClientManager implements Runnable {
                     System.exit(0);
                 }
 
-                byte[] requestBytes = NetworkUtils.Receive(in);
-                JSONObject request = JsonUtils.fromByteArray(requestBytes);
+                Request request = Request.parseDelimitedFrom(in);
 
-                System.out.println("Received:\n" + request);
+                System.out.println("Received:\n" + request.getType());
 
-                JSONObject response = makeResponse(request);
+                Response response = makeResponse(request);
 
                 if (!this.isConnected) break;
 
-                byte[] output = JsonUtils.toByteArray(response);
-                NetworkUtils.Send(out, output);
+                response.writeDelimitedTo(out);
             }
 
         } catch (IOException e) {
@@ -57,18 +55,18 @@ public class ClientManager implements Runnable {
         }
     }
 
-    public JSONObject makeResponse(JSONObject request) {
-        switch (request.getString("type")) {
-            case "echo" -> {
-                return createEchoResponse(request.getString("body"));
+    public Response makeResponse(Request request) {
+        switch (request.getType()) {
+            case ECHO -> {
+                return createEchoResponse(request.getBody());
             }
-            case "reverse" -> {
-                return createReverseResponse(request.getString("body"));
+            case REVERSE -> {
+                return createReverseResponse(request.getBody());
             }
-            case "string array" -> {
+            case STRING_ARRAY -> {
                 return createStringArrayResponse();
             }
-            case "exit" -> {
+            case EXIT -> {
                 System.out.println("Client " + this.clientID + " has requested to disconnect.");
                 Server.removeClient(this.clientID);
                 System.out.println("There are now " + Server.getClientCount() + " clients connected.");

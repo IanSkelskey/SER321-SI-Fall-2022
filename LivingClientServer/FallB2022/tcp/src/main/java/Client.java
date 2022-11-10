@@ -1,7 +1,6 @@
-import org.json.JSONArray;
-import org.json.JSONObject;
-import utils.JsonUtils;
-import utils.NetworkUtils;
+import buffers.Message.Request;
+import buffers.Message.Response;
+import buffers.Message.Type;
 
 import java.io.*;
 import java.net.Socket;
@@ -25,30 +24,22 @@ class Client {
             while (true) {
                 showMenu();
                 String selection = stdIn.readLine();
-                JSONObject request = makeRequest(Integer.parseInt(selection));
+                Request request = makeRequest(Integer.parseInt(selection));
 
                 if (request == null) {
                     System.out.println("Failed to construct request. Please try again.");
                     continue;
                 }
 
-                NetworkUtils.Send(out, JsonUtils.toByteArray(request));
+                request.writeDelimitedTo(out);
 
-                if (request.getString("type").equalsIgnoreCase("exit")) {
+                if (request.getType() == Type.EXIT) {
                     System.exit(0);
                 }
 
-                byte[] responseBytes = NetworkUtils.Receive(in);
-                JSONObject response = JsonUtils.fromByteArray(responseBytes);
-                switch (response.getString("type")) {
-                    case "string array" -> {
-                        JSONArray array = response.getJSONArray("body");
-                        for (int i = 0; i < array.length(); i++) {
-                            System.out.println(array.getString(i));
-                        }
-                    }
-                    default -> System.out.println("Response: " + response.get("body"));
-                }
+                Response response = Response.parseDelimitedFrom(in);
+
+                System.out.println("Response: " + response.getBody());
             }
 
         } catch (Exception e) {
@@ -65,7 +56,7 @@ class Client {
         System.out.println("0\tExit");
     }
 
-    public static JSONObject makeRequest(int selection) {
+    public static Request makeRequest(int selection) {
         switch (selection) {
             case 1 -> {
                 System.out.print("Please enter a message for the server to echo: ");

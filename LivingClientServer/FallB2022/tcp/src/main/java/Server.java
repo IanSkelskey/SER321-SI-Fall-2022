@@ -6,7 +6,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 class Server {
-    // TODO: Synchronize access of static variable clientCount
     private static final List<Integer> clients = new ArrayList<>();
 
     public synchronized static void removeClient(int clientID) {
