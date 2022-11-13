@@ -47,8 +47,6 @@ class SockBaseServer {
             Request op = Request.parseDelimitedFrom(in);
             String result = null;
 
-            
-
             // if the operation is NAME (so the beginning then say there is a commention and greet the client)
             if (op.getOperationType() == Request.OperationType.NAME) {
                 // get name from proto object

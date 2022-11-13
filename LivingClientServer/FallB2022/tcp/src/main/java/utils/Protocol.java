@@ -10,6 +10,7 @@ import buffers.Message.Type;
 import java.util.ArrayList;
 
 public class Protocol {
+
     private static final ArrayList<String> STRING_ARRAY = new ArrayList<>();
 
     private static void buildStringArray() {

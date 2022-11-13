@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 class SockBaseClient {
 
-    public static void main (String args[]) throws Exception {
+    public static void main (String[] args) throws Exception {
         Socket serverSock = null;
         OutputStream out = null;
         InputStream in = null;
