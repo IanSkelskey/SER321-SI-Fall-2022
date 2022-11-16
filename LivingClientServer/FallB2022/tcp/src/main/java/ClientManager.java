@@ -28,27 +28,21 @@ public class ClientManager implements Runnable {
     @Override
     public void run() {
         try (
-                OutputStream out = socket.getOutputStream();
-                InputStream in = socket.getInputStream()
+                OutputStream out = this.socket.getOutputStream();
+                InputStream in = this.socket.getInputStream()
         ) {
             System.out.println("New client has connected on port: " + this.port);
-            System.out.println("The new count is " + Server.getClientCount());
+            System.out.println("The new client count is " + Server.getClientCount());
             while (this.isConnected) {
                 if (Server.getClientCount() == 0) {
                     System.exit(0);
                 }
-
                 Request request = Request.parseDelimitedFrom(in);
-
                 System.out.println("Received:\n" + request.getType());
-
                 Response response = makeResponse(request);
-
                 if (!this.isConnected) break;
-
                 response.writeDelimitedTo(out);
             }
-
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

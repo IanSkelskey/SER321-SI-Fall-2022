@@ -5,7 +5,7 @@ import java.util.concurrent.CountDownLatch;
 
 public class BallotBox {
     private final CountDownLatch countDownLatch;
-    private ArrayList<Boolean> votes;
+    private final ArrayList<Boolean> votes = new ArrayList<>();
 
     public BallotBox(int size) {
        countDownLatch = new CountDownLatch(size);
