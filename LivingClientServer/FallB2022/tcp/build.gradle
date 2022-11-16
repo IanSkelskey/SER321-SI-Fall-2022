@@ -28,7 +28,7 @@ protobuf {
 
 def port = 8080
 def host = 'localhost'
-def limit = 1
+def limit = 5
 
 task arguments {
   if (project.hasProperty("port")) {
@@ -50,6 +50,18 @@ task runClient(type: JavaExec) {
 
   main = 'Client'
   standardInput = System.in
+
+  args host
+  args port
+}
+
+task runVoter(type: JavaExec) {
+  group 'client'
+  description 'Runs voter'
+
+  classpath = sourceSets.main.runtimeClasspath
+
+  main = 'Voter'
 
   args host
   args port

@@ -5,7 +5,6 @@ import java.net.Socket;
 
 import buffers.Message.Request;
 import buffers.Message.Response;
-import buffers.Message.Type;
 
 import static utils.Protocol.*;
 import static utils.Protocol.createErrorResponse;
@@ -65,6 +64,9 @@ public class ClientManager implements Runnable {
             }
             case STRING_ARRAY -> {
                 return createStringArrayResponse();
+            }
+            case JOIN -> {
+                return createWelcomeResponse(request.getBody());
             }
             case EXIT -> {
                 System.out.println("Client " + this.clientID + " has requested to disconnect.");

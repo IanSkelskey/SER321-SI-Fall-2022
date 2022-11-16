@@ -21,4 +21,6 @@ enum Type {
   REVERSE = 2;
   STRING_ARRAY = 3;
   ERROR = 4;
+  JOIN = 5;
+  WELCOME = 6;
 }

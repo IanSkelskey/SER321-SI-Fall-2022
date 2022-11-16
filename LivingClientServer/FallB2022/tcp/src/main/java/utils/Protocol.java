@@ -1,8 +1,5 @@
 package utils;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import buffers.Message.Request;
 import buffers.Message.Response;
 import buffers.Message.Type;
@@ -18,6 +15,20 @@ public class Protocol {
         STRING_ARRAY.add("Goodbye");
         STRING_ARRAY.add("Hi");
         STRING_ARRAY.add("Bye");
+    }
+
+    public static Request createJoinRequest(String clientType) {
+        return Request.newBuilder()
+                .setType(Type.JOIN)
+                .setBody(clientType)
+                .build();
+    }
+
+    public static Response createWelcomeResponse(String clientType) {
+        return Response.newBuilder()
+                .setType(Type.WELCOME)
+                .setBody("Welcome, " + clientType + "!")
+                .build();
     }
 
     public static Response createEchoResponse(String message) {

@@ -1,6 +1,7 @@
 import buffers.Message.Request;
 import buffers.Message.Response;
 import buffers.Message.Type;
+import utils.Protocol;
 
 import java.io.*;
 import java.net.Socket;
@@ -21,6 +22,13 @@ class Client {
                 InputStream in = sock.getInputStream()
         ) {
             System.out.println("Host: " + host + "\nPort: " + port);
+
+            Request joinRequest = createJoinRequest("Client");
+            joinRequest.writeDelimitedTo(out);
+
+            Response response = Response.parseDelimitedFrom(in);
+            System.out.println("Response: " + response.getBody());
+
             while (true) {
                 showMenu();
                 String selection = stdIn.readLine();
@@ -37,7 +45,7 @@ class Client {
                     System.exit(0);
                 }
 
-                Response response = Response.parseDelimitedFrom(in);
+                response = Response.parseDelimitedFrom(in);
 
                 System.out.println("Response: " + response.getBody());
             }

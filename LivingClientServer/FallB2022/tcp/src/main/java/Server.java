@@ -1,3 +1,5 @@
+import utils.BallotBox;
+
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -7,6 +9,17 @@ import java.util.concurrent.Executors;
 
 class Server {
     private static final List<Integer> clients = new ArrayList<>();
+
+    private static BallotBox ballotBox;
+
+    public static boolean conductVote(int size) {
+        ballotBox = new BallotBox(size);
+        return ballotBox.getConsensus();
+    }
+
+    public static BallotBox getBallotBox() {
+        return ballotBox;
+    }
 
     public synchronized static void removeClient(int clientID) {
         clients.remove(clientID);
