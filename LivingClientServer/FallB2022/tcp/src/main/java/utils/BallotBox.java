@@ -26,6 +26,6 @@ public class BallotBox {
         for(boolean b : votes) {
             if (b) yesVotes += 1;
         }
-        return yesVotes > votes.size()/2;
+        return yesVotes > votes.size()/2 + 1;
     }
 }

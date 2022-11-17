@@ -24,6 +24,19 @@ public class Protocol {
                 .build();
     }
 
+    public static Request createVoteRequest() {
+        return Request.newBuilder()
+                .setType(Type.VOTE)
+                .build();
+    }
+
+    public static Response createVoteResponse(boolean consensus) {
+        return Response.newBuilder()
+                .setType(Type.VOTE)
+                .setConsensus(consensus)
+                .build();
+    }
+
     public static Response createWelcomeResponse(String clientType) {
         return Response.newBuilder()
                 .setType(Type.WELCOME)

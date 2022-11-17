@@ -18,6 +18,7 @@ public class NewConnectionManager implements Runnable {
         try {
             OutputStream out = this.socket.getOutputStream();
             InputStream in = this.socket.getInputStream();
+
             Message.Request request = Message.Request.parseDelimitedFrom(in);
             Message.Response response = makeResponse(request);
             response.writeDelimitedTo(out);

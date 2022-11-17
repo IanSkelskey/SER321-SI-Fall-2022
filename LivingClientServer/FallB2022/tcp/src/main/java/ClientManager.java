@@ -62,6 +62,9 @@ public class ClientManager implements Runnable {
             case JOIN -> {
                 return createWelcomeResponse(request.getBody());
             }
+            case  VOTE -> {
+                return createVoteResponse(Server.conductVote());
+            }
             case EXIT -> {
                 System.out.println("Client " + this.clientID + " has requested to disconnect.");
                 Server.removeClient(this.clientID);

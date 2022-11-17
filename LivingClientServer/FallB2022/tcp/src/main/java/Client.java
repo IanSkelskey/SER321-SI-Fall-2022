@@ -1,7 +1,6 @@
 import buffers.Message.Request;
 import buffers.Message.Response;
 import buffers.Message.Type;
-import utils.Protocol;
 
 import java.io.*;
 import java.net.Socket;
@@ -47,7 +46,11 @@ class Client {
 
                 response = Response.parseDelimitedFrom(in);
 
-                System.out.println("Response: " + response.getBody());
+                if (response.getType() == Type.VOTE) {
+                    System.out.println("Consensus from voters: " + response.getConsensus());
+                } else {
+                    System.out.println("Response: " + response.getBody());
+                }
             }
 
         } catch (Exception e) {
@@ -61,6 +64,7 @@ class Client {
         System.out.println("1\tEcho");
         System.out.println("2\tReverse");
         System.out.println("3\tString Array");
+        System.out.println("4\tVote");
         System.out.println("0\tExit");
     }
 
@@ -86,6 +90,9 @@ class Client {
             }
             case 3 -> {
                 return createStringArrayRequest();
+            }
+            case 4 -> {
+                return createVoteRequest();
             }
             case 0 -> {
                 return createExitRequest();

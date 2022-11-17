@@ -1,5 +1,8 @@
+import buffers.Message;
 import utils.BallotBox;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -7,18 +10,38 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import static utils.Protocol.createVoteRequest;
+
 class Server {
     private static final List<Integer> clients = new ArrayList<>();
-    private static final List<Integer> voters = new ArrayList<>();
+    private static final List<Socket> voters = new ArrayList<>();
+
+    public static void sendToAllVoters(Message.Request request) {
+        int headCount = getVoterCount();
+        ballotBox = new BallotBox(headCount);
+        for(Socket s: voters) {
+            try {
+                OutputStream out = s.getOutputStream();
+                request.writeDelimitedTo(out);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
 
     private static BallotBox ballotBox;
 
-    public static boolean conductVote(int size) {
-        ballotBox = new BallotBox(size);
+    public static void castVote(boolean vote) {
+        ballotBox.receiveVote(vote);
+    }
+
+    // TODO: Complete
+    public synchronized static boolean conductVote() {
+        sendToAllVoters(createVoteRequest());
         return ballotBox.getConsensus();
     }
 
-    public static BallotBox getBallotBox() {
+    public synchronized static BallotBox getBallotBox() {
         return ballotBox;
     }
 
@@ -34,8 +57,8 @@ class Server {
         clients.add(clientID);
     }
 
-    public static synchronized void addVoter(int voterID) {
-        voters.add(voterID);
+    public static synchronized void addVoter(Socket voterSocket) {
+        voters.add(voterSocket);
     }
 
     public static synchronized int getClientCount() {
@@ -47,7 +70,6 @@ class Server {
     }
 
     public static void main(String[] args) {
-
         int port = Integer.parseInt(args[0]);
         int limit = Integer.parseInt(args[1]);
 
