@@ -1,0 +1,65 @@
+plugins {
+    id 'java'
+    id "com.google.protobuf" version "0.8.18" apply true
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'io.grpc:grpc-netty-shaded:1.50.2'
+    implementation 'io.grpc:grpc-protobuf:1.50.2'
+    implementation 'io.grpc:grpc-stub:1.50.2'
+    compileOnly 'org.apache.tomcat:annotations-api:6.0.53' // necessary for Java 9+
+    implementation group: 'com.google.protobuf', name: 'protobuf-java', version: '3.18.0'
+}
+
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:3.21.1"
+    }
+    plugins {
+        grpc {
+            artifact = 'io.grpc:protoc-gen-grpc-java:1.48.1'
+        }
+    }
+    generateProtoTasks {
+        all()*.plugins {
+            grpc {}
+        }
+    }
+}
+
+def host = 'localhost'
+def port = 8088
+
+task arguments {
+    if (project.hasProperty("host")) {
+        host = project.getProperty("host")
+    }
+    if (project.hasProperty("port")) {
+        port = project.getProperty("port")
+    }
+}
+
+task runClient(type: JavaExec) {
+    dependsOn arguments
+
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'Client'
+
+    args port
+}
+
+task runServer(type: JavaExec) {
+
+}
+
+sourceSets{
+    main{
+        java{
+            srcDirs 'build/generated/source/proto/main/java'
+        }
+    }
+}

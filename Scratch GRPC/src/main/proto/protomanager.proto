@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "si";
+option java_outer_classname = "Proto";
+
+package protomanager;
+
+service Echo {
+  rpc parrot (ClientRequest) returns (ServerResponse) {}
+}
+
+message ClientRequest {
+  string message = 1;
+}
+
+message ServerResponse {
+  string message = 1;
+}
