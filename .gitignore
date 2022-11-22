@@ -2,5 +2,6 @@
 *.class
 */.gradle/
 */build/
+*/out/
 /LivingClientServer/FallB2022/tcp/.gradle/
 /LivingClientServer/FallB2022/tcp/build/
