@@ -49,11 +49,17 @@ task runClient(type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
     main = 'Client'
 
+    args host
     args port
 }
 
 task runServer(type: JavaExec) {
+    dependsOn arguments
 
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'ServiceProvider'
+
+    args port
 }
 
 sourceSets{
