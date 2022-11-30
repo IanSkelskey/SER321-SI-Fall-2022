@@ -7,10 +7,6 @@ import io.grpc.ServerMethodDefinition;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.ArrayList;
 
 /**
@@ -20,12 +16,7 @@ public class Node {
     static private Server server;
     int port;
 
-    ServerSocket serv = null;
-    InputStream in = null;
-    OutputStream out = null;
-    Socket clientSocket = null;
-
-    net.Network network = null;
+    net.Network network;
 
     Node(int port) {
         this.port = port;
@@ -33,10 +24,10 @@ public class Node {
     }
 
     private void start() throws IOException {
-        /* The port on which the server should run */
-        // Here we are adding the different services that a client can call
         ArrayList<String> services = new ArrayList<>();
         server = ServerBuilder.forPort(port)
+                .addService(new JokeImpl())
+                .addService(new EchoImpl())
                 .addService(new RockPaperScissorsImpl())
                 .addService(new RegistryAnswerImpl(services))
                 .build()
@@ -51,20 +42,15 @@ public class Node {
         }
 
         System.out.println("Server running ...");
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                // Use stderr here since the logger may have been reset by its JVM shutdown
-                // hook.
-                System.err.println("*** shutting down gRPC server since JVM is shutting down");
-                try {
-                    Node.this.stop();
-                } catch (InterruptedException e) {
-                    e.printStackTrace(System.err);
-                }
-                System.err.println("*** server shut down");
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            System.err.println("*** shutting down gRPC server since JVM is shutting down");
+            try {
+                Node.this.stop();
+            } catch (InterruptedException e) {
+                e.printStackTrace(System.err);
             }
-        });
+            System.err.println("*** server shut down");
+        }));
     }
 
     private void stop() throws InterruptedException {

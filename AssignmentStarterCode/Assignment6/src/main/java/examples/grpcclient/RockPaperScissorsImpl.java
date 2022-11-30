@@ -8,103 +8,88 @@ import java.util.*;
 
 public class RockPaperScissorsImpl extends RockPaperScissorsGrpc.RockPaperScissorsImplBase {
 
-    HashMap<String, Score> leaderboardEntries = new HashMap<>();
-
     @Override
     public void play(PlayReq request, StreamObserver<PlayRes> responseObserver) {
-        String name = request.getName();
-        Played played = request.getPlay();
-
-        System.out.println("Client " + name + " wants to play rock paper scissors.\n" +
-                "They have chosen " + played);
-
-        Played serverPlay = getServerPlay();
-
-        boolean win = playGame(played, serverPlay);
-
-        String message = "You played " + played + ". The server played " + serverPlay +
-                ((win) ? ". You win!" : ". You lose...");
-
-        PlayRes response = PlayRes.newBuilder()
-                .setIsSuccess(true)
-                .setWin(win)
-                .setMessage(message)
-                .setError("No error.")
-                .build();
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
-
-        Score score = (leaderboardEntries.containsKey(name)) ? leaderboardEntries.get(name) : new Score();
-        if(win) {
-            score.wins += 1;
-        } else {
-            score.losses += 1;
-        }
-        leaderboardEntries.put(name, score);
+        RockPaperScissorsGame game = new RockPaperScissorsGame(request);
+        game.playGame();
+        sendPlayResponse(true, game.getPlayerWins(), game.getPlayMessage(), Error.NO_ERROR.toString(), responseObserver);
     }
 
     @Override
     public void leaderboard(Empty request, StreamObserver<LeaderboardRes> responseObserver) {
-        LeaderboardRes.Builder response = LeaderboardRes.newBuilder();
-
-        if (leaderboardEntries.isEmpty()) {
-            response.setIsSuccess(false);
-            response.setError("No entries in the leaderboard yet.");
-
-        } else {
-            ArrayList<String> sortedList = new ArrayList<>();
-            leaderboardEntries.entrySet().stream().sorted(Map.Entry.comparingByValue()).forEach(e -> {
-                sortedList.add(e.getKey());
-            });
-            Collections.reverse(sortedList);
-            int i = 1;
-            for(String name: sortedList) {
-                Score s = leaderboardEntries.get(name);
-                LeaderboardEntry.Builder entryBuilder = LeaderboardEntry.newBuilder()
-                        .setName(name)
-                        .setRank(i)
-                        .setWins(s.wins)
-                        .setLost(s.losses);
-                LeaderboardEntry entry = entryBuilder.build();
-                response.addLeaderboard(entry);
-                i++;
-            }
-
-            response.setIsSuccess(true);
-            response.setError("Leaderboard successfully populated.");
-        }
-        LeaderboardRes resp = response.build();
-        responseObserver.onNext(resp);
-        responseObserver.onCompleted();
+        sendLeaderBoardResponse(responseObserver);
     }
 
-    public Played getServerPlay() {
-        Random random = new Random();
-        return Played.forNumber(random.nextInt(3));
-    }
+    private enum Error {
+        NO_ERROR("Execution successful."),
+        BAD_PLAY("Error processing move. Please enter:\n" +
+                "\tRock (0), Paper(1), or Scissors(2)");
 
-    public boolean playGame(Played player, Played server) {
-        boolean win = false;
+        private final String text;
 
-        if (player == Played.ROCK && server == Played.SCISSORS) win = true; // Rock beats scissors
-        if (player == Played.SCISSORS && server == Played.PAPER) win = true; // Scissors beats paper
-        if (player == Played.PAPER && server == Played.ROCK) win = true; // Paper beats rock
-
-        return win;
-    }
-
-    private static class Score implements Comparable<Score>{
-        int wins;
-        int losses;
-        Score() {
-            wins = 0;
-            losses = 0;
+        Error(final String text) {
+            this.text = text;
         }
 
         @Override
-        public int compareTo(Score o) {
-            return (this.wins - o.wins);
+        public String toString() {
+            return text;
         }
+
+    }
+
+    private void sendPlayResponse(boolean isSuccess, boolean win, String message, String error, StreamObserver<PlayRes> responseObserver) {
+        PlayRes response = buildPlayResponse(isSuccess, win, message, error);
+        responseObserver.onNext(response);
+        responseObserver.onCompleted();
+    }
+
+    private void sendLeaderBoardResponse(StreamObserver<LeaderboardRes> responseObserver) {
+        LeaderboardRes response = buildLeaderBoardResponse();
+        responseObserver.onNext(response);
+        responseObserver.onCompleted();
+    }
+
+    private LeaderboardRes buildLeaderBoardResponse() {
+        LeaderboardRes.Builder responseBuilder = LeaderboardRes.newBuilder();
+        if (RockPaperScissorsLeaderboard.isEmpty()) {
+            responseBuilder.setIsSuccess(false)
+                    .setError("No entries in the leaderboard yet.");
+        } else {
+            ArrayList<String> sortedList = RockPaperScissorsLeaderboard.getNamesSortedByRank();
+            int i = 1;
+            for (String name : sortedList) {
+                int wins = RockPaperScissorsLeaderboard.getPlayerWins(name);
+                int losses = RockPaperScissorsLeaderboard.getPlayerLosses(name);
+
+                LeaderboardEntry entry = buildLeaderBoardEntry(name, i, wins, losses);
+
+                responseBuilder.addLeaderboard(entry);
+                i++;
+            }
+
+            responseBuilder.setIsSuccess(true)
+                    .setError("Leaderboard successfully populated.");
+        }
+        return responseBuilder.build();
+    }
+
+    private LeaderboardEntry buildLeaderBoardEntry(String name, int rank, int wins, int losses) {
+        return LeaderboardEntry.newBuilder()
+                .setName(name)
+                .setRank(rank)
+                .setWins(wins)
+                .setLost(losses)
+                .build();
+    }
+
+    private PlayRes buildPlayResponse(boolean isSuccess, boolean win, String message, String error) {
+        return PlayRes.newBuilder()
+                .setIsSuccess(isSuccess)
+                .setWin(win)
+                .setMessage(message)
+                .setError(error)
+                .build();
     }
 
 }

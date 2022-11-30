@@ -24,7 +24,7 @@ import buffers.ResponseProtos.Response;
 class JokeImpl extends JokeGrpc.JokeImplBase {
     
     // having a global set of jokes
-    Stack<String> jokes = new Stack<String>();
+    Stack<String> jokes = new Stack<>();
     
     public JokeImpl(){
         super();
