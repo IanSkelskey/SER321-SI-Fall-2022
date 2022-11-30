@@ -23,7 +23,7 @@ dependencies {
     implementation group: 'org.json', name: 'json', version: '20200518'
     implementation 'io.grpc:grpc-netty-shaded:1.33.1'
     implementation 'io.grpc:grpc-protobuf:1.33.1'
-    implementation 'io.grpc:grpc-stub:1.49.1'
+    implementation 'io.grpc:grpc-stub:1.33.1'
     compileOnly 'org.apache.tomcat:annotations-api:6.0.53' // necessary for Java 9+
     implementation group: 'com.google.protobuf', name: 'protobuf-java', version: '3.18.0'
 }
@@ -91,6 +91,9 @@ task arguments {
     if (project.hasProperty("servicePort")) {
       servicePort = project.getProperty("servicePort")
     }
+    if (project.hasProperty("discoveryPort")) {
+      discoveryPort = project.getProperty("discoveryPort")
+    }
     if (project.hasProperty("message")) {
       messase = project.getProperty("message")
     }
@@ -112,6 +115,30 @@ group "registry"
   args protobufPort
   args jsonPort
   args grpcPort
+}
+
+// runs a test that creates some services that can be discovered
+task runDiscovery(type: JavaExec) {
+	group "registry"
+  classpath = sourceSets.main.runtimeClasspath
+  description = "Run ProtoBuf Discovery"
+  main = 'test.DiscoveryServers'
+}
+
+// registers the json services created with runDiscovery
+task testJsonRegistration(type: JavaExec) {
+	group "registry"
+  classpath = sourceSets.main.runtimeClasspath
+  description = "Run JSON Discovery"
+  main = 'test.TestJson'
+}
+
+// registers the protobuf services created with runDiscovery
+task testProtobufRegistration(type: JavaExec) {
+	group "registry"
+  classpath = sourceSets.main.runtimeClasspath
+  description = "Run Protobuf Discovery"
+  main = 'test.TestProtobuf'
 }
 
 // ####### Client Server example with grpc
@@ -146,3 +173,16 @@ task runNode(type: JavaExec) {
   args nodeName
   args regOn
 }
+
+
+// How I ran it:
+// ser321test.duckdns.org is my IP on the first AWS instance
+// on AWS instance: 
+
+// gradle runRegistryServer -PgrpcPort=8080
+
+// On a different AWS instance (could be the same one though just different ports)
+// gradle runNode -PnodeName="amehlhas" -PgrpcPort=8080 -PregistryHost="ser321test.duckdns.org" -PserviceHost="18.220.233.57" -PdiscoveryPort=8888 -PservicePort=8880
+
+// on my local machine
+//gradle runClientJava -PgrpcPort=8080 -PregistryHost="ser321test.duckdns.org" -PserviceHost="18.220.233.57" -PservicePort=8880

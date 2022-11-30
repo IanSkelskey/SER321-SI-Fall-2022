@@ -1,5 +1,6 @@
 package examples.grpcclient;
 
+import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
 import service.*;
 
@@ -9,48 +10,29 @@ public class RockPaperScissorsImpl extends RockPaperScissorsGrpc.RockPaperScisso
 
     HashMap<String, Score> leaderboardEntries = new HashMap<>();
 
-    PlayReq.Played ROCK = PlayReq.Played.ROCK;
-    PlayReq.Played PAPER = PlayReq.Played.PAPER;
-    PlayReq.Played SCISSORS = PlayReq.Played.SCISSORS;
-
     @Override
-    public void play(PlayReq req, StreamObserver<PlayRes> responseObserver) {
-        String name = req.getName();
-        Random rand = new Random();
-        PlayReq.Played playerChoice = req.getPlay();
-        PlayReq.Played serverChoice = PlayReq.Played.forNumber(rand.nextInt(3));
-        boolean win = true;
-        StringBuilder message = new StringBuilder();
-        StringBuilder error = new StringBuilder();
+    public void play(PlayReq request, StreamObserver<PlayRes> responseObserver) {
+        String name = request.getName();
+        Played played = request.getPlay();
 
-        message.append(name).append(" played ").append(playerChoice);
-        message.append(" Server played ").append(serverChoice);
+        System.out.println("Client " + name + " wants to play rock paper scissors.\n" +
+                "They have chosen " + played);
 
-        if (playerChoice == ROCK && serverChoice == SCISSORS) {
-            // You win.
-            message.append(" You win");
-        } else if (playerChoice == PAPER && serverChoice == ROCK) {
-            // You win.
-            message.append(" You win");
-        } else if (playerChoice == SCISSORS && serverChoice == PAPER) {
-            // You win.
-            message.append(" You win");
-        } else {
-            // You lose or tie...
-            message.append(" You lose");
-            win = false;
-        }
+        Played serverPlay = getServerPlay();
+
+        boolean win = playGame(played, serverPlay);
+
+        String message = "You played " + played + ". The server played " + serverPlay +
+                ((win) ? ". You win!" : ". You lose...");
 
         PlayRes response = PlayRes.newBuilder()
-                .setWin(win)
                 .setIsSuccess(true)
-                .setMessage(String.valueOf(message))
+                .setWin(win)
+                .setMessage(message)
+                .setError("No error.")
                 .build();
-
         responseObserver.onNext(response);
         responseObserver.onCompleted();
-
-        // Populate leaderboard entries map
 
         Score score = (leaderboardEntries.containsKey(name)) ? leaderboardEntries.get(name) : new Score();
         if(win) {
@@ -62,11 +44,13 @@ public class RockPaperScissorsImpl extends RockPaperScissorsGrpc.RockPaperScisso
     }
 
     @Override
-    public void leaderboard(com.google.protobuf.Empty req, StreamObserver<LeaderboardRes> resStreamObserver) {
+    public void leaderboard(Empty request, StreamObserver<LeaderboardRes> responseObserver) {
         LeaderboardRes.Builder response = LeaderboardRes.newBuilder();
+
         if (leaderboardEntries.isEmpty()) {
             response.setIsSuccess(false);
             response.setError("No entries in the leaderboard yet.");
+
         } else {
             ArrayList<String> sortedList = new ArrayList<>();
             leaderboardEntries.entrySet().stream().sorted(Map.Entry.comparingByValue()).forEach(e -> {
@@ -90,8 +74,23 @@ public class RockPaperScissorsImpl extends RockPaperScissorsGrpc.RockPaperScisso
             response.setError("Leaderboard successfully populated.");
         }
         LeaderboardRes resp = response.build();
-        resStreamObserver.onNext(resp);
-        resStreamObserver.onCompleted();
+        responseObserver.onNext(resp);
+        responseObserver.onCompleted();
+    }
+
+    public Played getServerPlay() {
+        Random random = new Random();
+        return Played.forNumber(random.nextInt(3));
+    }
+
+    public boolean playGame(Played player, Played server) {
+        boolean win = false;
+
+        if (player == Played.ROCK && server == Played.SCISSORS) win = true; // Rock beats scissors
+        if (player == Played.SCISSORS && server == Played.PAPER) win = true; // Scissors beats paper
+        if (player == Played.PAPER && server == Played.ROCK) win = true; // Paper beats rock
+
+        return win;
     }
 
     private static class Score implements Comparable<Score>{

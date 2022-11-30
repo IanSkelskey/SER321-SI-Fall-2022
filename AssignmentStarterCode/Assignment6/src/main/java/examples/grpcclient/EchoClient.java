@@ -1,5 +1,6 @@
 package examples.grpcclient;
 
+import com.google.protobuf.Empty;
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -16,69 +17,30 @@ import java.io.InputStreamReader;
  * Client that requests `parrot` method from the `EchoServer`.
  */
 public class EchoClient {
-  private final EchoGrpc.EchoBlockingStub echoStub;
-  private final JokeGrpc.JokeBlockingStub jokeStub;
-  private final RockPaperScissorsGrpc.RockPaperScissorsBlockingStub rpsStub;
-  private final BinaryGrpc.BinaryBlockingStub binaryStub;
-  private final RegistryGrpc.RegistryBlockingStub registryStub;
+  private final EchoGrpc.EchoBlockingStub echoBlockingStub;
+  private final JokeGrpc.JokeBlockingStub jokeBlockingStub;
+  private final RockPaperScissorsGrpc.RockPaperScissorsBlockingStub rpsBlockingStub;
+  private final RegistryGrpc.RegistryBlockingStub registryBlockingStub;
 
   /** Construct client for accessing server using the existing channel. */
   public EchoClient(Channel channel, Channel regChannel) {
     // 'channel' here is a Channel, not a ManagedChannel, so it is not this code's
     // responsibility to
     // shut it down.
+
     // Passing Channels to code makes code easier to test and makes it easier to
     // reuse Channels.
-    echoStub = EchoGrpc.newBlockingStub(channel);
-    jokeStub = JokeGrpc.newBlockingStub(channel);
-    rpsStub = RockPaperScissorsGrpc.newBlockingStub(channel);
-    binaryStub = BinaryGrpc.newBlockingStub(channel);
-    registryStub = RegistryGrpc.newBlockingStub(regChannel);
-  }
-
-  public void askToPlayRockPaperScissors(String name, int play) {
-    PlayReq request = PlayReq.newBuilder()
-            .setName(name)
-            .setPlay(PlayReq.Played.forNumber(play))
-            .build();
-    PlayRes response;
-
-    try {
-      response = rpsStub.play(request);
-      System.out.println(response.getMessage());
-      // System.out.println(response.getError());
-    } catch (Exception e) {
-      System.err.println("RPC failed: " + e);
-      return;
-    }
-  }
-
-  public void askForLeaderboard() {
-    com.google.protobuf.Empty empty = com.google.protobuf.Empty.newBuilder().build();
-    try {
-      LeaderboardRes response = rpsStub.leaderboard(empty);
-      System.out.println("\nRock Paper Scissors Leaderboard");
-      System.out.println("Rank\tName\tWins\tLosses");
-      for (LeaderboardEntry e: response.getLeaderboardList()) {
-        System.out.print(e.getRank());
-        System.out.print("\t" + e.getName());
-        System.out.print("\t" + e.getWins());
-        System.out.println("\t" + e.getLost());
-      }
-      System.out.println(response.getError());
-    } catch (Exception e) {
-      System.err.println("RPC failed: " + e);
-      return;
-    }
+    echoBlockingStub = EchoGrpc.newBlockingStub(channel);
+    jokeBlockingStub = JokeGrpc.newBlockingStub(channel);
+    rpsBlockingStub = RockPaperScissorsGrpc.newBlockingStub(channel);
+    registryBlockingStub = RegistryGrpc.newBlockingStub(regChannel);
   }
 
   public void askServerToParrot(String message) {
-    ClientRequest request = ClientRequest.newBuilder()
-            .setMessage(message)
-            .build();
+    ClientRequest request = ClientRequest.newBuilder().setMessage(message).build();
     ServerResponse response;
     try {
-      response = echoStub.parrot(request);
+      response = echoBlockingStub.parrot(request);
     } catch (Exception e) {
       System.err.println("RPC failed: " + e.getMessage());
       return;
@@ -86,39 +48,39 @@ public class EchoClient {
     System.out.println("Received from server: " + response.getMessage());
   }
 
-  public void askToConvertBinaryToString(String input) {
-    BinaryToStringReq request = BinaryToStringReq.newBuilder()
-            .setBinary(input)
+  public void askToPlayRPS(String name, Played play) {
+    PlayReq request = PlayReq.newBuilder()
+            .setName(name)
+            .setPlay(play)
             .build();
-    ConversionResponse response;
+    PlayRes response;
     try {
-      response = binaryStub.sendBinary(request);
-      System.out.println(response.getResult());
-      System.out.println(response.getError());
+      response = rpsBlockingStub.play(request);
+      System.out.println(response.getMessage());
     } catch (Exception e) {
-      System.err.println("RPC failed: " + e);
+      System.err.println("RPC failed: " + e.getMessage());
     }
   }
 
-  public void askToConvertStringToBinary(String input) {
-    StringToBinaryReq request = StringToBinaryReq.newBuilder()
-            .setStr(input)
-            .build();
-    ConversionResponse response;
+  public void askForRPSLeaderboard() {
+    LeaderboardRes response;
     try {
-      response = binaryStub.sendString(request);
-      System.out.println(response.getResult());
-      System.out.println(response.getError());
+      response = rpsBlockingStub.leaderboard(null);
+      for (LeaderboardEntry entry : response.getLeaderboardList()) {
+        System.out.println(entry);
+      }
     } catch (Exception e) {
-      System.err.println("RPC failed: " + e);
+      System.err.println("RPC failed: " + e.getMessage());
     }
   }
 
   public void askForJokes(int num) {
     JokeReq request = JokeReq.newBuilder().setNumber(num).build();
     JokeRes response;
+
+
     try {
-      response = jokeStub.getJoke(request);
+      response = jokeBlockingStub.getJoke(request);
     } catch (Exception e) {
       System.err.println("RPC failed: " + e);
       return;
@@ -134,10 +96,11 @@ public class EchoClient {
     JokeSetRes response;
 
     try {
-      response = jokeStub.setJoke(request);
+      response = jokeBlockingStub.setJoke(request);
       System.out.println(response.getOk());
     } catch (Exception e) {
       System.err.println("RPC failed: " + e);
+      return;
     }
   }
 
@@ -145,10 +108,11 @@ public class EchoClient {
     GetServicesReq request = GetServicesReq.newBuilder().build();
     ServicesListRes response;
     try {
-      response = registryStub.getServices(request);
+      response = registryBlockingStub.getServices(request);
       System.out.println(response.toString());
     } catch (Exception e) {
       System.err.println("RPC failed: " + e);
+      return;
     }
   }
 
@@ -156,8 +120,14 @@ public class EchoClient {
     FindServerReq request = FindServerReq.newBuilder().setServiceName(name).build();
     SingleServerRes response;
     try {
-      response = registryStub.findServer(request);
-      System.out.println(response.toString());
+      response = registryBlockingStub.findServer(request);
+
+      String uri = response.getConnection().getUri();
+      int port = response.getConnection().getPort();
+
+      System.out.println("Found a server that provides " + name);
+      System.out.println(uri + ":" + port);
+
     } catch (Exception e) {
       System.err.println("RPC failed: " + e);
       return;
@@ -168,7 +138,7 @@ public class EchoClient {
     FindServersReq request = FindServersReq.newBuilder().setServiceName(name).build();
     ServerListRes response;
     try {
-      response = registryStub.findServers(request);
+      response = registryBlockingStub.findServers(request);
       System.out.println(response.toString());
     } catch (Exception e) {
       System.err.println("RPC failed: " + e);
@@ -240,34 +210,44 @@ public class EchoClient {
       // create client
       EchoClient client = new EchoClient(channel, regChannel);
 
+      client.askToPlayRPS("Mike", Played.ROCK);
+      client.askToPlayRPS("Ian", Played.SCISSORS);
+      client.askToPlayRPS("John", Played.PAPER);
+      client.askToPlayRPS("Ian", Played.SCISSORS);
+      client.askToPlayRPS("Mike", Played.ROCK);
+      client.askToPlayRPS("Ian", Played.SCISSORS);
+      client.askToPlayRPS("John", Played.PAPER);
+      client.askToPlayRPS("Ian", Played.SCISSORS);
+      client.askToPlayRPS("Mike", Played.ROCK);
+      client.askToPlayRPS("Ian", Played.SCISSORS);
+      client.askToPlayRPS("John", Played.PAPER);
+      client.askToPlayRPS("Ian", Played.SCISSORS);
+      client.askToPlayRPS("Mike", Played.ROCK);
+      client.askToPlayRPS("Ian", Played.SCISSORS);
+      client.askToPlayRPS("John", Played.PAPER);
+      client.askToPlayRPS("Ian", Played.SCISSORS);
+
+      client.askForRPSLeaderboard();
+
+
       // call the parrot service on the server
       client.askServerToParrot(message);
 
       // ask the user for input how many jokes the user wants
       BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
+      // Reading data using readLine
+      System.out.println("How many jokes would you like?"); // NO ERROR handling of wrong input here.
+      String num = reader.readLine();
+
+      // calling the joked service from the server with num from user input
+      client.askForJokes(Integer.valueOf(num));
+
       // adding a joke to the server
       client.setJoke("I made a pencil with two erasers. It was pointless.");
 
-      // showing 6 jokes
-      client.askForJokes(6);
-
-      // Convert String to binary
-      client.askToConvertStringToBinary("Hello");
-
-      // Convert binary to string
-      client.askToConvertBinaryToString("0100100001100101011011000110110001101111");
-
-      client.askToPlayRockPaperScissors("Ian", 0);
-      client.askToPlayRockPaperScissors("John", 2);
-      client.askToPlayRockPaperScissors("Ian", 1);
-      client.askToPlayRockPaperScissors("John", 0);
-      client.askToPlayRockPaperScissors("Ian", 0);
-      client.askToPlayRockPaperScissors("John", 2);
-      client.askToPlayRockPaperScissors("Ian", 1);
-      client.askToPlayRockPaperScissors("John", 0);
-      client.askForLeaderboard();
-
+      // showing 6 joked
+      client.askForJokes(Integer.valueOf(6));
 
       // ############### Contacting the registry just so you see how it can be done
 
@@ -282,16 +262,11 @@ public class EchoClient {
         // get all setJoke
         client.findServers("services.Joke/setJoke"); // get ALL servers that provide the setJoke service
 
+        System.out.println("Checking for servers in the registry that provide rock paper scissors service!");
+        client.findServers("services.RockPaperScissors/play"); // get ALL servers that provide the setJoke service
+
         // get getJoke
         client.findServer("services.Joke/getJoke"); // get ALL servers that provide the getJoke service
-
-        System.out.println("Servers with binary service: ");
-
-        // convert binary to string
-        client.findServer("services.Binary/sendBinary");
-
-        // convert binary to string
-        client.findServer("services.Binary/sendString");
 
         // does not exist
         client.findServer("random"); // shows the output if the server does not find a given service

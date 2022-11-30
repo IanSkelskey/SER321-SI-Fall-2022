@@ -1,18 +1,14 @@
-Oct 03, 2022 5:24:11 PM registry.Logging logging
-INFO: New service registered: iskelske localhost:8000
-Oct 03, 2022 6:25:55 PM registry.Logging logging
-INFO: New service registered: iskelske2 localhost:8000
-Oct 03, 2022 6:27:23 PM registry.Logging logging
-INFO: New service registered: iskelske2 localhost:9009
-Oct 03, 2022 6:27:51 PM registry.Logging logging
-INFO: New service registered: iskelske2 localhost:9009
-Oct 03, 2022 6:27:58 PM registry.Logging logging
-INFO: New service registered: iskelske localhost:8000
-Oct 03, 2022 7:19:23 PM registry.Logging logging
-INFO: New service registered: iskelske localhost:8000
-Oct 03, 2022 7:24:01 PM registry.Logging logging
-INFO: New service registered: iskelske2 localhost:9009
-Oct 04, 2022 7:18:35 PM registry.Logging logging
-INFO: New service registered: iskelske localhost:8000
-Oct 04, 2022 7:19:43 PM registry.Logging logging
-INFO: New service registered: iskelske2 localhost:9009
+Nov 27, 2022 5:46:27 PM registry.Logging logging
+INFO: New service registered: test localhost:8000
+Nov 27, 2022 5:47:49 PM registry.Logging logging
+INFO: New service registered: test localhost:8000
+Nov 27, 2022 5:48:07 PM registry.Logging logging
+INFO: New service registered: test localhost:8000
+Nov 27, 2022 5:48:20 PM registry.Logging logging
+INFO: New service registered: test localhost:8000
+Nov 27, 2022 5:49:25 PM registry.Logging logging
+INFO: New service registered: test localhost:9090
+Nov 27, 2022 7:31:31 PM registry.Logging logging
+INFO: New service registered: test localhost:8000
+Nov 27, 2022 7:35:59 PM registry.Logging logging
+INFO: New service registered: test localhost:9999

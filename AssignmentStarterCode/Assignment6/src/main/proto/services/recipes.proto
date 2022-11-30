@@ -16,7 +16,7 @@ service Recipe {
   rpc rateRecipe (RecipeRateReq) returns (RecipeResp) {}
 }
 
-// REQUEST: To post a Recipe, recipe will get an IP by server
+// REQUEST: To post a Recipe, recipe will get an ID by server
 message RecipeReq {
     string name = 1;
     string author = 2;
@@ -27,7 +27,7 @@ message RecipeReq {
 // REQUEST: To rate the recipe with the given id
 message RecipeRateReq {
     int32 id = 1;
-    bool rating = 2;
+    float rating = 2;
 }
 
 // RESPONSE: Validates posting or rating a Recipe

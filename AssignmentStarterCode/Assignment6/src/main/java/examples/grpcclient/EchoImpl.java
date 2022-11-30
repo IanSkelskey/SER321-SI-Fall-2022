@@ -14,5 +14,5 @@ class EchoImpl extends EchoGrpc.EchoImplBase {
         ServerResponse response = ServerResponse.newBuilder().setMessage(req.getMessage()).build();
         responseObserver.onNext(response);
         responseObserver.onCompleted();
-    }
+    }     
 }

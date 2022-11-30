@@ -5,3 +5,4 @@ gradlew.bat
 /build/
 *.log.lck
 *.log
+.DS_STORE
