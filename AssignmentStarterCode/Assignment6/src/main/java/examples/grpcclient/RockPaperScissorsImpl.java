@@ -12,36 +12,27 @@ public class RockPaperScissorsImpl extends RockPaperScissorsGrpc.RockPaperScisso
     public void play(PlayReq request, StreamObserver<PlayRes> responseObserver) {
         RockPaperScissorsGame game = new RockPaperScissorsGame(request);
         game.playGame();
-        sendPlayResponse(true, game.getPlayerWins(), game.getPlayMessage(), Error.NO_ERROR.toString(), responseObserver);
-    }
-
-    @Override
-    public void leaderboard(Empty request, StreamObserver<LeaderboardRes> responseObserver) {
-        sendLeaderBoardResponse(responseObserver);
-    }
-
-    private enum Error {
-        NO_ERROR("Execution successful."),
-        BAD_PLAY("Error processing move. Please enter:\n" +
-                "\tRock (0), Paper(1), or Scissors(2)");
-
-        private final String text;
-
-        Error(final String text) {
-            this.text = text;
-        }
-
-        @Override
-        public String toString() {
-            return text;
-        }
-
+        sendPlayResponse(true, game.getPlayerWins(), game.getPlayMessage(), Error.GAME_SUCCESS.toString(), responseObserver);
     }
 
     private void sendPlayResponse(boolean isSuccess, boolean win, String message, String error, StreamObserver<PlayRes> responseObserver) {
         PlayRes response = buildPlayResponse(isSuccess, win, message, error);
         responseObserver.onNext(response);
         responseObserver.onCompleted();
+    }
+
+    private PlayRes buildPlayResponse(boolean isSuccess, boolean win, String message, String error) {
+        return PlayRes.newBuilder()
+                .setIsSuccess(isSuccess)
+                .setWin(win)
+                .setMessage(message)
+                .setError(error)
+                .build();
+    }
+
+    @Override
+    public void leaderboard(Empty request, StreamObserver<LeaderboardRes> responseObserver) {
+        sendLeaderBoardResponse(responseObserver);
     }
 
     private void sendLeaderBoardResponse(StreamObserver<LeaderboardRes> responseObserver) {
@@ -54,7 +45,7 @@ public class RockPaperScissorsImpl extends RockPaperScissorsGrpc.RockPaperScisso
         LeaderboardRes.Builder responseBuilder = LeaderboardRes.newBuilder();
         if (RockPaperScissorsLeaderboard.isEmpty()) {
             responseBuilder.setIsSuccess(false)
-                    .setError("No entries in the leaderboard yet.");
+                    .setError(Error.NO_ENTRIES.toString());
         } else {
             ArrayList<String> sortedList = RockPaperScissorsLeaderboard.getNamesSortedByRank();
             int i = 1;
@@ -69,7 +60,7 @@ public class RockPaperScissorsImpl extends RockPaperScissorsGrpc.RockPaperScisso
             }
 
             responseBuilder.setIsSuccess(true)
-                    .setError("Leaderboard successfully populated.");
+                    .setError(Error.LEADERBOARD_SUCCESS.toString());
         }
         return responseBuilder.build();
     }
@@ -83,13 +74,24 @@ public class RockPaperScissorsImpl extends RockPaperScissorsGrpc.RockPaperScisso
                 .build();
     }
 
-    private PlayRes buildPlayResponse(boolean isSuccess, boolean win, String message, String error) {
-        return PlayRes.newBuilder()
-                .setIsSuccess(isSuccess)
-                .setWin(win)
-                .setMessage(message)
-                .setError(error)
-                .build();
+    private enum Error {
+        GAME_SUCCESS("Game execution successful."),
+        LEADERBOARD_SUCCESS("Leaderboard successfully populated."),
+        BAD_PLAY("Error processing move. Please enter:\n" +
+                "\tRock (0), Paper(1), or Scissors(2)"),
+        NO_ENTRIES("No entries in the leaderboard yet.");
+
+        private final String text;
+
+        Error(final String text) {
+            this.text = text;
+        }
+
+        @Override
+        public String toString() {
+            return text;
+        }
+
     }
 
 }

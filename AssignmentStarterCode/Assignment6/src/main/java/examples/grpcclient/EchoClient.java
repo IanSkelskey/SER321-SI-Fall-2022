@@ -225,6 +225,8 @@ public class EchoClient {
       client.askToPlayRPS("Mike", Played.ROCK);
       client.askToPlayRPS("Ian", Played.SCISSORS);
       client.askToPlayRPS("John", Played.PAPER);
+      client.askToPlayRPS("John", Played.PAPER);
+      client.askToPlayRPS("John", Played.ROCK);
       client.askToPlayRPS("Ian", Played.SCISSORS);
 
       client.askForRPSLeaderboard();
